@@ -39,14 +39,14 @@ static void visualize(const char *title, size_t sz, const struct FieldDesc *fiel
         printf("%s: struct too large to visualize (%zu bytes)\n", title, sz);
         return;
     }
-    for (size_t i = 0; i < sz; i++) mem[i] = '.';
+
+    for (size_t i = 0; i < sz; i++) mem[i] = 'P';
 
     for (size_t f = 0; f < nfields; f++) {
         for (size_t i = 0; i < fields[f].size; i++) {
             mem[fields[f].offset + i] = fields[f].tag;
         }
     }
-    for (size_t i = 0; i < sz; i++) if (mem[i] == '.') mem[i] = 'P';
 
     printf("\n%s: size=%zu bytes\n", title, sz);
     printf("Offsets: ");
@@ -87,10 +87,25 @@ int main(void) {
 
     // Quick compare summary
     printf("\nComparison:\n");
+    printf("\n");
+    printf("Human1:\n");
     printf("sizeof(human1_t) = %zu\n", sizeof(human1_t));
-    printf("sizeof(human2_t) = %zu\n", sizeof(human2_t));
     printf("alignof(human1_t) = %zu\n", alignof(human1_t));
+    printf("offsetof(human1_t, first_initial) = %zu\n", offsetof(human1_t, first_initial));
+    printf("offsetof(human1_t, age) = %zu\n", offsetof(human1_t, age));
+    printf("offsetof(human1_t, height) = %zu\n", offsetof(human1_t, height));
+    printf("offsetof(human1_t, name) = %zu\n", offsetof(human1_t, name));
+
+    printf("\n");
+    printf("Human2:\n");
+    printf("sizeof(human2_t) = %zu\n", sizeof(human2_t));
     printf("alignof(human2_t) = %zu\n", alignof(human2_t));
+    printf("offsetof(human2_t, name) = %zu\n", offsetof(human2_t, name));
+    printf("offsetof(human2_t, height) = %zu\n", offsetof(human2_t, height));
+    printf("offsetof(human2_t, age) = %zu\n", offsetof(human2_t, age));
+    printf("offsetof(human2_t, first_initial) = %zu\n", offsetof(human2_t, first_initial));
+
+    printf("\n");
     printf("alignof(name_t)  = %zu\n", alignof(name_t));
     printf("alignof(double)  = %zu\n", alignof(double));
     printf("alignof(int)     = %zu\n", alignof(int));
