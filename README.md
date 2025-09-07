@@ -121,31 +121,38 @@ gcc -std=c11 -Wall -Wextra -Wpedantic -O2 -o memory_padding main.c
 
 ## Sample Output
 
-The program will output:
+The program demonstrates struct field ordering effects by comparing two different arrangements of the same fields. It shows:
 
-1. Size and alignment information for basic types and the struct
-2. Byte offsets of each struct member
-3. A visual representation of the memory layout showing data and padding bytes
+1. Field offset information for each struct variant
+2. A visual table representation of the memory layout
+3. Comparison of total sizes and alignment requirements
 
 Example output:
 
-```c
-sizeof(char)   = 1, alignof(char)   = 1
-sizeof(int)    = 4, alignof(int)    = 4
-sizeof(double) = 8, alignof(double) = 8
-sizeof(name_t) = 16, alignof(name_t) = 8
+```
+Human1: size=32 bytes
+Offsets: first_initial@0 age@4 height@8 name@16 
+ 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 |10 |11 |12 |13 |14 |15 |16 |17 |18 |19 |20 |21 |22 |23 |24 |25 |26 |27 |28 |29 |30 |31 |
+ F | P | P | P | A | A | A | A | H | H | H | H | H | H | H | H | N | N | N | N | N | N | N | N | N | N | N | N | N | N | N | N |
 
-offsetof(first_initial) = 0
-offsetof(age)           = 4
-offsetof(height)        = 8
-offsetof(name)          = 16
-sizeof(human_t)         = 32
-alignof(human_t)        = 8
+Legend: F=first_initial A=age H=height N=name P=padding
 
-Byte offsets 0..31:
- 0 1 2 3 4 5 6 7 8 9101112131415161718192021222324252627282930311
- F P P P A A A A H H H H H H H H N N N N N N N N N N N N N N N N
-Legend: F=first_initial, A=age, H=height, P=padding, N=name
+Human2: size=32 bytes
+Offsets: name@0 height@16 age@24 first_initial@28 
+ 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 |10 |11 |12 |13 |14 |15 |16 |17 |18 |19 |20 |21 |22 |23 |24 |25 |26 |27 |28 |29 |30 |31 |
+ N | N | N | N | N | N | N | N | N | N | N | N | N | N | N | N | H | H | H | H | H | H | H | H | A | A | A | A | F | P | P | P |
+
+Legend: N=name H=height A=age F=first_initial P=padding
+
+Comparison:
+sizeof(human1_t) = 32
+sizeof(human2_t) = 32
+alignof(human1_t) = 8
+alignof(human2_t) = 8
+alignof(name_t)  = 8
+alignof(double)  = 8
+alignof(int)     = 4
+alignof(char)    = 1
 ```
 
 ## Understanding Memory Alignment and Padding
