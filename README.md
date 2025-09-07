@@ -2,6 +2,82 @@
 
 A simple C program that demonstrates memory layout and padding in structures, showing how the compiler aligns struct members in memory.
 
+## TL;DR
+
+**At a high level**: The struct layout process happens at **compile time**. The compiler processes fields in **declaration order** and places each field at the next valid memory offset that satisfies the field's alignment requirement. Each field's offset must be a **multiple of its `alignof()` value**, with the first field always starting at offset 0. The compiler automatically inserts **padding bytes** between fields when necessary to maintain proper alignment. The final struct size is rounded up to be a multiple of the struct's overall alignment (which equals the maximum alignment of all its fields).
+
+**Key insight**: `field_address = struct_base_address + compile_time_offset` - all offsets are calculated once at compile time and baked into your program as constants.
+
+### Visual Step-by-Step Layout Process
+
+Here's exactly how the compiler lays out our `human_t` struct:
+
+```c
+typedef struct Human {
+    char   first_initial;  // alignof = 1, sizeof = 1
+    int    age;            // alignof = 4, sizeof = 4  
+    double height;         // alignof = 8, sizeof = 8
+} human_t;
+```
+
+**Step 1: Place `first_initial` (char)**
+```
+current_offset = 0
+Need offset that's multiple of alignof(char) = 1
+Next valid offset ≥ 0 where offset % 1 == 0 → offset = 0 ✓
+
+Memory: [F|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_]
+Offset:  0 1 2 3 4 5 6 7 8 9101112131415
+        
+✅ first_initial at offset 0
+current_offset = 0 + 1 = 1
+```
+
+**Step 2: Place `age` (int)**
+```
+current_offset = 1
+Need offset that's multiple of alignof(int) = 4
+Next valid offset ≥ 1 where offset % 4 == 0 → offset = 4 ✓
+
+Memory: [F|P|P|P|A|A|A|A|_|_|_|_|_|_|_|_]
+Offset:  0 1 2 3 4 5 6 7 8 9101112131415
+
+🧱 INSERT PADDING: 3 bytes (offsets 1,2,3)
+✅ age at offset 4
+current_offset = 4 + 4 = 8
+```
+
+**Step 3: Place `height` (double)**
+```
+current_offset = 8
+Need offset that's multiple of alignof(double) = 8
+Next valid offset ≥ 8 where offset % 8 == 0 → offset = 8 ✓
+
+Memory: [F|P|P|P|A|A|A|A|H|H|H|H|H|H|H|H]
+Offset:  0 1 2 3 4 5 6 7 8 9101112131415
+
+✅ height at offset 8 (no padding needed!)
+current_offset = 8 + 8 = 16
+```
+
+**Step 4: Finalize struct**
+```
+struct_alignment = max(1, 4, 8) = 8
+sizeof(human_t) = 16 (already multiple of 8, no tail padding needed)
+
+Final layout:
+Memory: [F|P|P|P|A|A|A|A|H|H|H|H|H|H|H|H]
+Offset:  0 1 2 3 4 5 6 7 8 9101112131415
+         │       │       │
+         │       │       └── height (8 bytes)
+         │       └────────── age (4 bytes)  
+         └────────────────── first_initial (1 byte)
+
+Legend: F=first_initial, P=padding, A=age, H=height
+```
+
+**🎯 Key Insight**: The 3 padding bytes (offsets 1,2,3) exist because `int` must start at a multiple of 4, but `char` only used 1 byte!
+
 ## What it does
 
 This program defines a `human_t` struct with different data types and visualizes how they are laid out in memory, including any padding bytes added by the compiler for alignment purposes.
